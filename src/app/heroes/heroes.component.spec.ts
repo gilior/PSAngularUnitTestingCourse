@@ -27,6 +27,7 @@ describe('heroes.component', () => {
       heroesComponent.heroes = heroes;
       heroesComponent.delete(heroes[2])
       expect(mockHeroService.deleteHero).toHaveBeenCalled();
+      expect(mockHeroService.deleteHero).toHaveBeenCalledWith(heroes[2]);
     })
   })
 })
