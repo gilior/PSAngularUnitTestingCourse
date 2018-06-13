@@ -28,6 +28,7 @@ describe('heroes.component (deep)', () => {
     })
     fixture = TestBed.createComponent(HeroesComponent);
     mockHeroService.getHeroes.and.returnValue(of(heroes));
+
     fixture.detectChanges();
   })
   it('render each hero as hero component', () => {
@@ -47,6 +48,49 @@ describe('heroes.component (deep)', () => {
     l.forEach(i => {
       heroes.map(i => i.name).indexOf(i.componentInstance.hero.name) != -1
     })
+  })
+
+  xit('should call heroservice.delhero when the heroe components dle button is clicked (not working)', () => {
+    spyOn(fixture.componentInstance, 'delete');
+    let heroesComponent = fixture.debugElement.queryAll(By.directive(HeroComponent))[0];
+    let btn = heroesComponent.query(By.css('button'))
+    btn.triggerEventHandler('click', {
+      stopPropogation: () => {
+      }
+    });
+
+    expect(fixture.componentInstance.delete).toHaveBeenCalledWith(heroes[0]);
+  })
+
+  it('should call heroservice.delhero when the heroe components dle button is clicked', () => {
+    spyOn(fixture.componentInstance, 'delete');
+    let heroesComponent = fixture.debugElement.queryAll(By.directive(HeroComponent))[0];
+
+    // call delete.emit from component
+    // (<HeroComponent>heroesComponent.componentInstance).delete.emit(undefined)
+
+    // triggerEvent
+    heroesComponent.triggerEventHandler('delete', {
+      stopPropogation: () => {
+      }
+    });
+
+    expect(fixture.componentInstance.delete).toHaveBeenCalledWith(heroes[0]);
+  })
+
+  it('should save new hero and add to hero list when add hero clicked', () => {
+    const name = 'new-hero'
+    mockHeroService.addHero.and.returnValue(of({id: 5, name: name, strength: 55}));
+    let input = fixture.debugElement.query(By.css('input')).nativeElement;
+    let addBtn = fixture.debugElement.queryAll(By.css('button'))[0];
+    input.value = name;
+    addBtn.triggerEventHandler('click', null)
+   fixture.detectChanges();
+
+   const newHeroName= fixture.debugElement.query(By.css('ul')).nativeElement.textContent
+
+    expect(newHeroName).toContain(name)
+    expect(mockHeroService.addHero).toHaveBeenCalled();
   })
 
 
