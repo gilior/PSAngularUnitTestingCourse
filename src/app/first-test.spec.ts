@@ -8,7 +8,5 @@ describe('1st test',()=>{
     sut.a=false;
     sut.a=true
     expect(sut.a).toBe(true)
-
-
   })
 })
