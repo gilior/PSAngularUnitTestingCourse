@@ -1,6 +1,6 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {HeroesComponent} from "./heroes.component";
-import {NO_ERRORS_SCHEMA} from "@angular/core";
+import {Directive, Input, NO_ERRORS_SCHEMA} from "@angular/core";
 import {HeroService} from "../hero.service";
 import {of} from "rxjs/observable/of";
 import {Hero} from "../hero";
@@ -8,6 +8,17 @@ import {HeroComponent} from "../hero/hero.component";
 import {By} from "@angular/platform-browser";
 
 
+@Directive({
+selector:'[routerLink]'
+})
+
+export  class mockRouterLinkDirective{
+  @Input linkParams:any;
+  navigateTo:any=null;
+  onClick(){
+this.navigateTo=this.linkParams;
+  }
+}
 describe('heroes.component (deep)', () => {
   let mockHeroService;
   let heroes: Hero[]
@@ -24,7 +35,7 @@ describe('heroes.component (deep)', () => {
     TestBed.configureTestingModule({
       declarations: [HeroesComponent, HeroComponent],
       providers: [{provide: HeroService, useValue: mockHeroService}],
-      schemas: [NO_ERRORS_SCHEMA]
+      // schemas: [NO_ERRORS_SCHEMA]
     })
     fixture = TestBed.createComponent(HeroesComponent);
     mockHeroService.getHeroes.and.returnValue(of(heroes));
