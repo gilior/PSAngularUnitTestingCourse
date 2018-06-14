@@ -1,6 +1,6 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {HeroesComponent} from "./heroes.component";
-import {Directive, Input, NO_ERRORS_SCHEMA} from "@angular/core";
+import {Directive, Input} from "@angular/core";
 import {HeroService} from "../hero.service";
 import {of} from "rxjs/observable/of";
 import {Hero} from "../hero";
@@ -9,16 +9,18 @@ import {By} from "@angular/platform-browser";
 
 
 @Directive({
-selector:'[routerLink]'
+  selector: '[routerLink]',
+  host: {'(click)': 'onClick()'}
 })
+export class MockRouterLinkDirective {
+  @Input('routerLink') linkParams: any;
+  navigatedTo: any = null;
 
-export  class mockRouterLinkDirective{
-  @Input linkParams:any;
-  navigateTo:any=null;
-  onClick(){
-this.navigateTo=this.linkParams;
+  onClick() {
+    this.navigatedTo = this.linkParams;
   }
 }
+
 describe('heroes.component (deep)', () => {
   let mockHeroService;
   let heroes: Hero[]
@@ -33,7 +35,8 @@ describe('heroes.component (deep)', () => {
     ]
     mockHeroService = jasmine.createSpyObj(['getHeroes', 'addHero', 'deleteHero'])
     TestBed.configureTestingModule({
-      declarations: [HeroesComponent, HeroComponent],
+      // imports:[RouterTestingModule],
+      declarations: [HeroesComponent, HeroComponent, MockRouterLinkDirective],
       providers: [{provide: HeroService, useValue: mockHeroService}],
       // schemas: [NO_ERRORS_SCHEMA]
     })
@@ -96,12 +99,30 @@ describe('heroes.component (deep)', () => {
     let addBtn = fixture.debugElement.queryAll(By.css('button'))[0];
     input.value = name;
     addBtn.triggerEventHandler('click', null)
-   fixture.detectChanges();
+    fixture.detectChanges();
 
-   const newHeroName= fixture.debugElement.query(By.css('ul')).nativeElement.textContent
+    const newHeroName = fixture.debugElement.query(By.css('ul')).nativeElement.textContent
 
     expect(newHeroName).toContain(name)
     expect(mockHeroService.addHero).toHaveBeenCalled();
+  })
+
+  it('should have the correct route for the first hero', () => {
+    // let firstHeroComponent = fixture.debugElement.queryAll(By.directive(HeroComponent))[0];
+    // let firstHeroComponentAnchor = firstHeroComponent.nativeElement.querySelector('a');
+    // let firstHeroComponentAnchorHref = firstHeroComponentAnchor.attributes['href'];
+    // firstHeroComponentAnchorHref.
+
+    let firstHeroComponent = fixture.debugElement.queryAll(By.directive(HeroComponent))[0];
+
+    let firstHeroComponentMockRouterLinkDirective = firstHeroComponent.query(By.directive(MockRouterLinkDirective));
+
+    let mockRouterLinkDirective = firstHeroComponentMockRouterLinkDirective.injector.get(MockRouterLinkDirective);
+
+    firstHeroComponent.query(By.css('a')).triggerEventHandler('click', null)
+
+    expect(mockRouterLinkDirective.navigatedTo).toEqual(`/detail/${heroes[0].id}`)
+
   })
 
 
