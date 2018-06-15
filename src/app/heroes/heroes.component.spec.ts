@@ -13,7 +13,7 @@ describe('heroes.component', () => {
       {name: 'name-c', id: 3, strength: 33}
     ]
     mockHeroService = jasmine.createSpyObj(['getHeroes', 'addHero', 'deleteHero'])
-    heroesComponent = new HeroesComponent(mockHeroService);
+      heroesComponent = new HeroesComponent(mockHeroService);
   })
   describe('del hero', () => {
     it('del hero when deleted', () => {

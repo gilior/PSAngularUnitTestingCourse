@@ -1,48 +1,108 @@
-import {ComponentFixture, TestBed} from "@angular/core/testing";
+import {async, ComponentFixture, fakeAsync, flush, TestBed, tick} from "@angular/core/testing";
 import {HeroDetailComponent} from "./hero-detail.component";
 import {ActivatedRoute} from "@angular/router";
 import {HeroService} from "../hero.service";
-import {Location} from '@angular/common'
-import {By} from "@angular/platform-browser";
+import {Location} from '@angular/common';
 import {of} from "rxjs/observable/of";
 import {FormsModule} from "@angular/forms";
-import {Hero} from "../hero";
 
 describe('hero-detail.component', () => {
-  let mockActivatedRoute, mockLocation, mockHeroService, fixture: ComponentFixture<HeroDetailComponent>
+  let fixture: ComponentFixture<HeroDetailComponent>;
+  let mockActivatedRoute, mockHeroService, mockLocation;
+
   beforeEach(() => {
-
-    //mocks services
-
-    mockHeroService = jasmine.createSpyObj(['getHero', 'updateHero'])
-    mockLocation = jasmine.createSpyObj(['back'])
     mockActivatedRoute = {
       snapshot: {
         paramMap: {
           get: () => {
-            return '3'
+            return '3';
           }
         }
       }
     }
+    mockHeroService = jasmine.createSpyObj(['getHero', 'updateHero']);
+    mockLocation = jasmine.createSpyObj(['back']);
+
     TestBed.configureTestingModule({
-      imports:[FormsModule],
+      imports: [FormsModule],
       declarations: [HeroDetailComponent],
       providers: [
         {provide: ActivatedRoute, useValue: mockActivatedRoute},
-        {provide: Location, useValue: mockLocation},
         {provide: HeroService, useValue: mockHeroService},
+        {provide: Location, useValue: mockLocation},
       ]
-    })
+    });
     fixture = TestBed.createComponent(HeroDetailComponent);
-    mockHeroService.getHero.and.returnValue(of(<Hero>{name:'foo',id:1,strength:11}))
+
+    mockHeroService.getHero.and.returnValue(of({id: 3, name: 'SuperDude', strength: 100}));
+  });
+
+  it('should render hero name in a h2 tag', () => {
     fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('h2').textContent).toContain('SUPERDUDE');
+  });
+
+  it('should call updateHero when save is called (settimeout)', () => {
+    mockHeroService.updateHero.and.returnValue(of({}));
+    fixture.detectChanges();
+
+
+    fixture.componentInstance.save();
+
+    setTimeout(() => {
+      expect(mockHeroService.updateHero).toHaveBeenCalled()
+    }, 300)
+
+
   })
 
-  it('should render hero name inside h2 tag', () => {
-    // let h2NativeElement = fixture.debugElement.query(By.css('h2')).nativeElement;
+  xit('should call updateHero when save is called (not working cause fakeAsync)', fakeAsync(() => {
+    mockHeroService.updateHero.and.returnValue(of({}));
     fixture.detectChanges();
-    let h2NativeElement = fixture.nativeElement.querySelector('h2');
-    expect(h2NativeElement.textContent).toContain('FOO')
-  })
+
+    fixture.componentInstance.save();
+    fixture.detectChanges();
+
+    expect(mockHeroService.updateHero).toHaveBeenCalled()
+
+  }))
+
+  it('should call updateHero when save is called (fakeAsync(tick))', fakeAsync(() => {
+    mockHeroService.updateHero.and.returnValue(of({}));
+    fixture.detectChanges();
+
+    fixture.componentInstance.save();
+
+    tick(250);
+    expect(mockHeroService.updateHero).toHaveBeenCalled()
+
+  }))
+
+
+  it('should call updateHero when save is called (fakeAsync(flush))', fakeAsync(() => {
+    mockHeroService.updateHero.and.returnValue(of({}));
+    fixture.detectChanges();
+
+    fixture.componentInstance.save();
+
+    flush()
+    expect(mockHeroService.updateHero).toHaveBeenCalled()
+
+  }))
+
+  xit('should call updateHero when save is called (not working (async))', async(() => {
+    mockHeroService.updateHero.and.returnValue(of({}));
+    fixture.detectChanges();
+
+    fixture.componentInstance.save();
+
+    fixture.whenStable()
+      .then(() => {
+        expect(mockHeroService.updateHero).toHaveBeenCalled()
+      })
+  }))
 })
+
+
+
